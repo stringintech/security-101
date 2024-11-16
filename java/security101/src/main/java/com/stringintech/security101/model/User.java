@@ -9,15 +9,20 @@ import java.util.List;
 
 public class User implements UserDetails { //TODO add validation
 
+    private String fullName;
+
     private String username;
 
     private String password;
 
     private Instant createdAt;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     @Override
@@ -46,4 +51,8 @@ public class User implements UserDetails { //TODO add validation
         this.createdAt = createdAt;
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
 }
