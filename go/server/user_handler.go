@@ -1,15 +1,17 @@
-package handler
+package server
 
 import (
 	"encoding/json"
+	"github.com/stringintech/security-101/server/auth"
 	"net/http"
+	"time"
 
-	"github.com/stringintech/security-101/auth"
 	"github.com/stringintech/security-101/model"
 	"github.com/stringintech/security-101/store"
 )
 
 type RegisterRequest struct {
+	FullName string `json:"full_name"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
@@ -26,13 +28,13 @@ type LoginResponse struct {
 
 type UserHandler struct {
 	store *store.UserStore
-	auth  *auth.Service
+	auth  *auth.JwtService
 }
 
-func NewUserHandler(store *store.UserStore, auth *auth.Service) *UserHandler {
+func NewUserHandler(store *store.UserStore, jwt *auth.JwtService) *UserHandler {
 	return &UserHandler{
 		store: store,
-		auth:  auth,
+		auth:  jwt,
 	}
 }
 
@@ -48,7 +50,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, exists := h.store.FindByUsername(req.Username); exists {
+	if _, exists := h.store.GetUserByUsername(req.Username); exists {
 		http.Error(w, "Username already exists", http.StatusBadRequest)
 		return
 	}
@@ -60,16 +62,17 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := model.User{
-		Username:     req.Username,
-		PasswordHash: hashedPassword,
+		Username:  req.Username,
+		Password:  hashedPassword,
+		CreatedAt: time.Now(),
 	}
 
-	if err := h.store.Save(user); err != nil {
+	if err := h.store.Create(user); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(user)
+	Encode(w, user)
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -84,13 +87,13 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, exists := h.store.FindByUsername(req.Username)
+	user, exists := h.store.GetUserByUsername(req.Username)
 	if !exists {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
 
-	if err := h.auth.ComparePasswords(user.PasswordHash, req.Password); err != nil {
+	if err := h.auth.ComparePasswords(user.GetPassword(), req.Password); err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
@@ -101,9 +104,9 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(LoginResponse{
+	Encode(w, LoginResponse{
 		Token: token,
-		User:  user,
+		User:  user.(model.User), // safe
 	})
 }
 
@@ -113,11 +116,19 @@ func (h *UserHandler) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, ok := auth.UserFromContext(r.Context())
+	user, ok := auth.GetUserFromContext(r.Context())
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	json.NewEncoder(w).Encode(user)
+	Encode(w, user)
+}
+
+func Encode(w http.ResponseWriter, payload any) {
+	err := json.NewEncoder(w).Encode(payload)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 }

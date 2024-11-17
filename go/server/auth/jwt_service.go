@@ -4,57 +4,66 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/stringintech/security-101/model"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Service struct {
-	jwtSecret []byte
+type JwtServiceConfig struct {
+	Secret             []byte
+	ExpirationInterval time.Duration
 }
 
-func NewService(jwtSecret []byte) *Service {
-	return &Service{
-		jwtSecret: jwtSecret,
-	}
+type JwtService struct {
+	config JwtServiceConfig
 }
 
-func (s *Service) HashPassword(password string) (string, error) {
+func NewJwtService(c JwtServiceConfig) *JwtService {
+	return &JwtService{c}
+}
+
+func (s *JwtService) HashPassword(password string) (string, error) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(hashedBytes), err
 }
 
-func (s *Service) ComparePasswords(hashedPassword, password string) error {
+func (s *JwtService) ComparePasswords(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
-func (s *Service) GenerateToken(user model.User) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.Username,
-		"iat": time.Now().Unix(),
-		"exp": time.Now().Add(time.Hour * 24 * 10).Unix(), // 10 days
+func (s *JwtService) GenerateToken(user User) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
+		Subject: user.GetUsername(),
+		IssuedAt: &jwt.NumericDate{
+			Time: time.Now(),
+		},
 	})
-
-	return token.SignedString(s.jwtSecret)
+	return token.SignedString(s.config.Secret)
 }
 
-func (s *Service) ValidateToken(tokenString string) (string, error) {
+func (s *JwtService) ValidateTokenAndGetUsername(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return s.jwtSecret, nil
-	})
-
-	if err != nil || !token.Valid {
+		return s.config.Secret, nil
+	}) //TODO use WithValidMethods!!!
+	if err != nil {
 		return "", err
 	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
+	if !token.Valid {
 		return "", jwt.ErrInvalidKey
 	}
 
-	username, ok := claims["sub"].(string)
-	if !ok {
+	issuedAt, err := token.Claims.GetIssuedAt()
+	if err != nil {
 		return "", jwt.ErrInvalidKey
 	}
+	if issuedAt == nil {
+		return "", jwt.ErrInvalidKey
+	}
+	if issuedAt.Add(s.config.ExpirationInterval).Before(time.Now()) {
+		return "", jwt.ErrTokenExpired
+	}
 
+	username, err := token.Claims.GetSubject()
+	if err != nil || username == "" {
+		return "", jwt.ErrInvalidKey
+	}
 	return username, nil
 }

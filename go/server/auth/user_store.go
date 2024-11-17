@@ -1,7 +1,10 @@
-package server
+package auth
 
-import "github.com/stringintech/security-101/model"
+type User interface {
+	GetUsername() string
+	GetPassword() string
+}
 
 type UserStore interface {
-	GetUserByUsername(username string) (model.User, bool)
+	GetUserByUsername(username string) (User, bool)
 }
