@@ -1,4 +1,4 @@
-package com.stringintech.security101.controller;
+package com.stringintech.security101.dto;
 
 import com.stringintech.security101.model.User;
 

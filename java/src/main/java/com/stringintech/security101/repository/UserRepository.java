@@ -1,5 +1,6 @@
 package com.stringintech.security101.repository;
 
+import com.stringintech.security101.exception.DuplicateUsernameException;
 import com.stringintech.security101.model.User;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +15,10 @@ public class UserRepository {
     }
 
     public User createUser(User user) {
-        if (users.containsKey(user.getUsername())) {
-            throw new IllegalArgumentException("Duplicate username"); //TODO or invalid request? enhance exception handling
+        User existing = users.putIfAbsent(user.getUsername(), user);
+        if (existing != null) {
+            throw new DuplicateUsernameException(user.getUsername());
         }
-        users.put(user.getUsername(), user);
         return user;
     }
 

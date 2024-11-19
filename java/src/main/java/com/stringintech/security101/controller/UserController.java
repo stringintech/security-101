@@ -1,7 +1,9 @@
 package com.stringintech.security101.controller;
 
-import com.stringintech.security101.dto.UserLoginDto;
-import com.stringintech.security101.dto.UserRegisterDto;
+import com.stringintech.security101.dto.UserDto;
+import com.stringintech.security101.dto.UserLoginRequest;
+import com.stringintech.security101.dto.UserLoginResponse;
+import com.stringintech.security101.dto.UserRegisterRequest;
 import com.stringintech.security101.model.User;
 import com.stringintech.security101.service.JwtService;
 import com.stringintech.security101.service.TimeService;
@@ -30,27 +32,31 @@ public class UserController {
     }
 
     @PostMapping("/auth/register")
-    public ResponseEntity<User> register(@RequestBody UserRegisterDto user) { //TODO validation return type
-        User u = this.userService.register(user);
-        return ResponseEntity.ok(u); //TODO handle exceptions
+    public ResponseEntity<UserDto> register(@RequestBody UserRegisterRequest req) {
+        User u = this.userService.register(req);
+
+        UserDto dto = new UserDto(u);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginDto user) {
-        User u = this.userService.authenticate(user);
+    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest req) {
+        User u = this.userService.authenticate(req);
         Instant creationTime = timeService.now();
         String token = jwtService.generateToken(u, creationTime);
-        UserLoginResponse r = new UserLoginResponse();
-        r.setUser(u);
-        r.setToken(token);
-        r.setTokenCreationTime(creationTime);
-        return ResponseEntity.ok(r);
+
+        UserLoginResponse resp = new UserLoginResponse();
+        resp.setUser(u);
+        resp.setToken(token);
+        resp.setTokenCreationTime(creationTime);
+        return ResponseEntity.ok(resp);
     }
 
     @PostMapping("/users/me")
-    public ResponseEntity<User> getAuthenticatedUser() {
+    public ResponseEntity<UserDto> getAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) auth.getPrincipal();
-        return ResponseEntity.ok(user);
+        User u = (User) auth.getPrincipal();
+        UserDto dto = new UserDto(u);
+        return ResponseEntity.ok(dto);
     }
 }
