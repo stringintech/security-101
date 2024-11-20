@@ -1,6 +1,7 @@
 package com.stringintech.security101.config;
 
 import com.stringintech.security101.service.JwtService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -52,19 +54,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null) {
                 final String jwt = authHeader.substring(7);
-                // TODO?
-                // exception thrown if validation fails; okay to be caught and passed to resolver?
-                // so basically the question is when go to the next filter in the chain directly
-                // and when let resolver do its job
-                String username = jwtService.extractUsernameFromAndValidate(jwt);
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username); //TODO cache
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                try {
+                    // TODO?
+                    // exception thrown if validation fails; okay to be caught and passed to resolver?
+                    // so basically the question is when go to the next filter in the chain directly
+                    // and when let resolver do its job
+                    String username = jwtService.extractUsernameFromAndValidate(jwt);
+                    UserDetails userDetails = this.userDetailsService.loadUserByUsername(username); //TODO cache
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } catch (JwtException | UsernameNotFoundException e) {
+                    //TODO log?
+                }
             }
 
             filterChain.doFilter(request, response);

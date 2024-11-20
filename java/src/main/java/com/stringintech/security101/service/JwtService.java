@@ -31,9 +31,14 @@ public class JwtService {
     }
 
     public String extractUsernameFromAndValidate(String token) {
-        Claims claims = extractAllClaims(token);
-        if (claims == null) {
-            throw new JwtException("Failed to parse token");
+        Claims claims;
+        try {
+            claims = extractAllClaims(token);
+            if (claims == null) {
+                throw new JwtException("Failed to parse token");
+            }
+        } catch (Exception e) {
+            throw new JwtException("Failed to parse token", e);
         }
         String username = claims.getSubject();
         if (username == null) {
