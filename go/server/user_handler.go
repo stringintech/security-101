@@ -62,6 +62,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := model.User{
+		FullName:  req.FullName,
 		Username:  req.Username,
 		Password:  hashedPassword,
 		CreatedAt: time.Now(),
@@ -128,7 +129,6 @@ func (h *UserHandler) Me(w http.ResponseWriter, r *http.Request) {
 func Encode(w http.ResponseWriter, payload any) {
 	err := json.NewEncoder(w).Encode(payload)
 	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
+		//TODO
 	}
 }
