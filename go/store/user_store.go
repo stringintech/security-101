@@ -1,26 +1,30 @@
 package store
 
 import (
+	"fmt"
 	"github.com/stringintech/security-101/model"
 	"github.com/stringintech/security-101/server/auth"
+	"sync"
 )
 
 type UserStore struct {
-	users map[string]model.User
+	users sync.Map
 }
 
 func NewUserStore() *UserStore {
-	return &UserStore{
-		users: make(map[string]model.User),
-	}
+	return &UserStore{}
 }
 
 func (s *UserStore) Create(user model.User) error {
-	s.users[user.Username] = user
+	if _, loaded := s.users.LoadOrStore(user.Username, user); loaded {
+		return fmt.Errorf("username already exists") //TODO introduce error types
+	}
 	return nil
 }
 
-func (s *UserStore) GetUserByUsername(username string) (auth.User, bool) { // safe to cast to model.User
-	user, exists := s.users[username]
-	return user, exists
+func (s *UserStore) GetUserByUsername(username string) (auth.User, bool) {
+	if value, ok := s.users.Load(username); ok {
+		return value.(model.User), true
+	}
+	return model.User{}, false
 }
