@@ -55,7 +55,7 @@ class UserControllerIntegrationTest {
     void whenRegisterUser_thenReturn200AndUser() throws Exception {
         UserRegisterRequest registerDto = new UserRegisterRequest();
         registerDto.setUsername("testuser");
-        registerDto.setPassword("password123");
+        registerDto.setPassword("Test123@pass");
         registerDto.setFullName("Test User");
 
         mockMvc.perform(post("/auth/register")
@@ -74,7 +74,7 @@ class UserControllerIntegrationTest {
         // First registration
         UserRegisterRequest registerDto = new UserRegisterRequest();
         registerDto.setUsername("duplicate");
-        registerDto.setPassword("password123");
+        registerDto.setPassword("Test123@pass");
         registerDto.setFullName("Test User");
 
         mockMvc.perform(post("/auth/register")
@@ -99,7 +99,7 @@ class UserControllerIntegrationTest {
         // First register a user
         UserRegisterRequest registerDto = new UserRegisterRequest();
         registerDto.setUsername("logintest");
-        registerDto.setPassword("password123");
+        registerDto.setPassword("Test123@pass");
         registerDto.setFullName("Login Test");
 
         mockMvc.perform(post("/auth/register")
@@ -110,7 +110,7 @@ class UserControllerIntegrationTest {
         // Then try to login
         UserLoginRequest loginDto = new UserLoginRequest();
         loginDto.setUsername("logintest");
-        loginDto.setPassword("password123");
+        loginDto.setPassword("Test123@pass");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -144,7 +144,7 @@ class UserControllerIntegrationTest {
         // First register a user
         UserRegisterRequest registerDto = new UserRegisterRequest();
         registerDto.setUsername("wrongpass");
-        registerDto.setPassword("password123");
+        registerDto.setPassword("Test123@pass");
         registerDto.setFullName("Wrong Pass Test");
 
         mockMvc.perform(post("/auth/register")
@@ -173,7 +173,7 @@ class UserControllerIntegrationTest {
         // First register and login to get token
         UserRegisterRequest registerDto = new UserRegisterRequest();
         registerDto.setUsername("getuser");
-        registerDto.setPassword("password123");
+        registerDto.setPassword("Test123@pass");
         registerDto.setFullName("Get User Test");
 
         mockMvc.perform(post("/auth/register")
@@ -183,7 +183,7 @@ class UserControllerIntegrationTest {
 
         UserLoginRequest loginDto = new UserLoginRequest();
         loginDto.setUsername("getuser");
-        loginDto.setPassword("password123");
+        loginDto.setPassword("Test123@pass");
 
         String response = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -232,7 +232,7 @@ class UserControllerIntegrationTest {
         // First register and login to get token
         UserRegisterRequest registerDto = new UserRegisterRequest();
         registerDto.setUsername("expiredtoken");
-        registerDto.setPassword("password123");
+        registerDto.setPassword("Test123@pass");
         registerDto.setFullName("Expired Token Test");
 
         mockMvc.perform(post("/auth/register")
@@ -242,7 +242,7 @@ class UserControllerIntegrationTest {
 
         UserLoginRequest loginDto = new UserLoginRequest();
         loginDto.setUsername("expiredtoken");
-        loginDto.setPassword("password123");
+        loginDto.setPassword("Test123@pass");
 
         String response = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -272,7 +272,7 @@ class UserControllerIntegrationTest {
         // First register and login to get token
         UserRegisterRequest registerDto = new UserRegisterRequest();
         registerDto.setUsername("deleteuser");
-        registerDto.setPassword("password123");
+        registerDto.setPassword("Test123@pass");
         registerDto.setFullName("Delete User Test");
 
         mockMvc.perform(post("/auth/register")
@@ -282,7 +282,7 @@ class UserControllerIntegrationTest {
 
         UserLoginRequest loginDto = new UserLoginRequest();
         loginDto.setUsername("deleteuser");
-        loginDto.setPassword("password123");
+        loginDto.setPassword("Test123@pass");
 
         String response = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

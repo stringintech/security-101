@@ -8,6 +8,7 @@ import com.stringintech.security101.model.User;
 import com.stringintech.security101.service.JwtService;
 import com.stringintech.security101.service.TimeService;
 import com.stringintech.security101.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,7 +33,7 @@ public class UserController {
     }
 
     @PostMapping("/auth/register")
-    public ResponseEntity<UserDto> register(@RequestBody UserRegisterRequest req) {
+    public ResponseEntity<UserDto> register(@Valid @RequestBody UserRegisterRequest req) {
         User u = this.userService.register(req);
 
         UserDto dto = new UserDto(u);
@@ -40,7 +41,7 @@ public class UserController {
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest req) {
+    public ResponseEntity<UserLoginResponse> login(@Valid @RequestBody UserLoginRequest req) {
         User u = this.userService.authenticate(req);
         Instant creationTime = timeService.now();
         String token = jwtService.generateToken(u, creationTime);

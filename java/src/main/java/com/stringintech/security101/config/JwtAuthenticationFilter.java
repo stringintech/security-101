@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.log.LogMessage;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -55,12 +56,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (authentication == null) {
                 final String jwt = authHeader.substring(7);
                 try {
-                    // TODO?
-                    // exception thrown if validation fails; okay to be caught and passed to resolver?
-                    // so basically the question is when go to the next filter in the chain directly
-                    // and when let resolver do its job
                     String username = jwtService.extractUsernameFromAndValidate(jwt);
-                    UserDetails userDetails = this.userDetailsService.loadUserByUsername(username); //TODO cache
+                    UserDetails userDetails = this.userDetailsService.loadUserByUsername(username); // could be cached
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
@@ -69,7 +66,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 } catch (JwtException | UsernameNotFoundException e) {
-                    //TODO log?
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(LogMessage.format("Invalid token: %s", e.getMessage()));
+                    }
                 }
             }
 

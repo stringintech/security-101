@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 
-public class User implements UserDetails { //TODO add validation
+public class User implements UserDetails {
 
     private String fullName;
 

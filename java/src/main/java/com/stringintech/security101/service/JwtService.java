@@ -30,6 +30,7 @@ public class JwtService {
         this.timeService = timeService;
     }
 
+    // this can get neater
     public String extractUsernameFromAndValidate(String token) {
         Claims claims;
         try {
@@ -64,9 +65,8 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        //TODO parse might throw exception
         Object payload = Jwts.parser().verifyWith(getSignInKey()).build().parse(token).getPayload();
-        return payload instanceof Claims ? (Claims) payload : null; //TODO when null?
+        return payload instanceof Claims ? (Claims) payload : null;
     }
 
     private SecretKey getSignInKey() {
