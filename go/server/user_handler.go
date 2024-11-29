@@ -2,7 +2,7 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/stringintech/security-101/server/auth"
+	"github.com/stringintech/security-101/auth"
 	"net/http"
 	"time"
 

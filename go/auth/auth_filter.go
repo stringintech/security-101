@@ -1,7 +1,6 @@
-package filter
+package auth
 
 import (
-	"github.com/stringintech/security-101/server/auth"
 	"net/http"
 	"strings"
 )
@@ -14,22 +13,22 @@ func NewAuthenticationFilter(publicPaths []string) *AuthenticationFilter {
 	return &AuthenticationFilter{publicPaths}
 }
 
-func (f *AuthenticationFilter) DoFilter(w http.ResponseWriter, r *http.Request, chain Chain) {
+func (f *AuthenticationFilter) DoFilter(r *Request) {
 	// Continue chain if path is public
 	for _, path := range f.publicPaths {
-		if strings.HasPrefix(r.URL.Path, path) {
-			chain.Next(w, r)
+		if strings.HasPrefix(r.Http.URL.Path, path) {
+			r.Proceed()
 			return
 		}
 	}
 
 	// Check if user is authenticated
-	_, ok := auth.GetUserFromContext(r.Context())
+	_, ok := GetUserFromContext(r.Http.Context())
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(r.ResponseWriter, "Unauthorized", http.StatusUnauthorized) //TODO add method to r?
 		return
 	}
 
 	// User is authenticated, continue chain
-	chain.Next(w, r)
+	r.Proceed()
 }

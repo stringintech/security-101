@@ -2,8 +2,8 @@ package store
 
 import (
 	"fmt"
+	"github.com/stringintech/security-101/auth"
 	"github.com/stringintech/security-101/model"
-	"github.com/stringintech/security-101/server/auth"
 	"sync"
 )
 

@@ -3,9 +3,9 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/stringintech/security-101/auth"
 	"github.com/stringintech/security-101/model"
 	"github.com/stringintech/security-101/server"
-	"github.com/stringintech/security-101/server/auth"
 	"github.com/stringintech/security-101/store"
 	"net/http"
 	"net/http/httptest"
