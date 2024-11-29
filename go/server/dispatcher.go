@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/stringintech/security-101/auth"
 	"net/http"
 )
 
@@ -30,4 +31,8 @@ func (d *Dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.NotFound(w, r)
+}
+
+func (d *Dispatcher) DoFilter(w http.ResponseWriter, r *http.Request, _ auth.FilterChain) {
+	d.ServeHTTP(w, r)
 }

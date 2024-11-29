@@ -13,22 +13,22 @@ func NewAuthenticationFilter(publicPaths []string) *AuthenticationFilter {
 	return &AuthenticationFilter{publicPaths}
 }
 
-func (f *AuthenticationFilter) DoFilter(r *Request) {
+func (f *AuthenticationFilter) DoFilter(w http.ResponseWriter, r *http.Request, filterChain FilterChain) {
 	// Continue chain if path is public
 	for _, path := range f.publicPaths {
-		if strings.HasPrefix(r.Http.URL.Path, path) {
-			r.Proceed()
+		if strings.HasPrefix(r.URL.Path, path) {
+			filterChain.DoFilter(w, r)
 			return
 		}
 	}
 
 	// Check if user is authenticated
-	_, ok := GetUserFromContext(r.Http.Context())
+	_, ok := GetUserFromContext(r.Context())
 	if !ok {
-		http.Error(r.ResponseWriter, "Unauthorized", http.StatusUnauthorized) //TODO add method to r?
+		http.Error(w, "Unauthorized", http.StatusUnauthorized) //TODO add method to r?
 		return
 	}
 
 	// User is authenticated, continue chain
-	r.Proceed()
+	filterChain.DoFilter(w, r)
 }

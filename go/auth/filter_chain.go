@@ -4,22 +4,20 @@ import (
 	"net/http"
 )
 
-type FilterChain struct {
+type FilterChain interface {
+	DoFilter(w http.ResponseWriter, r *http.Request)
+}
+
+type FilterChainImpl struct {
 	filters []Filter
 }
 
-func NewFilterChain(filters ...Filter) *FilterChain {
-	return &FilterChain{
+func NewFilterChain(filters ...Filter) FilterChain {
+	return &FilterChainImpl{
 		filters: filters,
 	}
 }
 
-func (fc *FilterChain) Filter(w http.ResponseWriter, r *http.Request) *Request {
-	if len(fc.filters) == 0 {
-		return nil
-	}
-	// Start the chain processing with the first filter
-	request := NewRequest(fc, w, r)
-	fc.filters[0].DoFilter(request)
-	return request
+func (fc *FilterChainImpl) DoFilter(w http.ResponseWriter, r *http.Request) {
+	NewVirtualFilterChain(fc.filters).DoFilter(w, r)
 }

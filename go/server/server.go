@@ -8,8 +8,7 @@ import (
 )
 
 type Server struct {
-	AuthFilterChain *auth.FilterChain
-	Dispatcher      http.Handler
+	auth.FilterChain
 }
 
 func New(userStore *store.UserStore, jwtService *auth.JwtService) *Server {
@@ -20,18 +19,18 @@ func New(userStore *store.UserStore, jwtService *auth.JwtService) *Server {
 	dispatcher.Register("/auth/login", userHandler.Login)
 	dispatcher.Register("/users/me", userHandler.Me)
 
-	filterChain := auth.NewFilterChain(auth.NewJwtAuthenticationFilter(jwtService, userStore), auth.NewAuthenticationFilter([]string{"/auth/"}))
+	filterChain := auth.NewFilterChain(
+		auth.NewJwtFilter(jwtService, userStore),
+		auth.NewAuthenticationFilter([]string{"/auth/"}),
+		dispatcher,
+	)
 
-	return &Server{
-		AuthFilterChain: filterChain,
-		Dispatcher:      dispatcher,
-	}
+	return &Server{filterChain}
 }
 
 // ServeHTTP implements http.Handler to make Server a valid handler
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	modifiedRequest := s.AuthFilterChain.Filter(w, r) //TODO well let's think
-	s.Dispatcher.ServeHTTP(modifiedRequest.ResponseWriter, modifiedRequest.Http)
+	s.DoFilter(w, r) //TODO well let's think
 }
 
 func (s *Server) Serve() {

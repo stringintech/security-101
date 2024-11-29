@@ -1,24 +1,25 @@
 package auth
 
 import (
+	"net/http"
 	"strings"
 )
 
-type JwtAuthenticationFilter struct {
+type JwtFilter struct {
 	jwtService *JwtService
 	userStore  UserStore
 }
 
-func NewJwtAuthenticationFilter(jwt *JwtService, store UserStore) *JwtAuthenticationFilter {
-	return &JwtAuthenticationFilter{jwt, store}
+func NewJwtFilter(jwt *JwtService, store UserStore) *JwtFilter {
+	return &JwtFilter{jwt, store}
 }
 
-func (f *JwtAuthenticationFilter) DoFilter(r *Request) {
-	authHeader := r.Http.Header.Get("Authorization")
+func (f *JwtFilter) DoFilter(w http.ResponseWriter, r *http.Request, filterChain FilterChain) {
+	authHeader := r.Header.Get("Authorization")
 
 	// If no auth header or not Bearer token, continue chain
 	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-		r.Proceed()
+		filterChain.DoFilter(w, r)
 		return
 	}
 
@@ -28,7 +29,7 @@ func (f *JwtAuthenticationFilter) DoFilter(r *Request) {
 	username, err := f.jwtService.ValidateTokenAndGetUsername(tokenString)
 	if err != nil {
 		//TODO log?
-		r.Proceed()
+		filterChain.DoFilter(w, r)
 		return
 	}
 
@@ -36,12 +37,12 @@ func (f *JwtAuthenticationFilter) DoFilter(r *Request) {
 	user, exists := f.userStore.GetUserByUsername(username)
 	if !exists {
 		//TODO log?
-		r.Proceed()
+		filterChain.DoFilter(w, r)
 		return
 	}
 
 	// Set user in context and continue chain
-	ctx := SetUserInContext(r.Http.Context(), user)
-	r.Http = r.Http.WithContext(ctx) //TODO :)
-	r.Proceed()
+	ctx := SetUserInContext(r.Context(), user)
+	r = r.WithContext(ctx) //TODO :)
+	filterChain.DoFilter(w, r)
 }
