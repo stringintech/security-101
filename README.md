@@ -1,0 +1,1 @@
+See [Understanding JWT Authentication: Spring Security's Architecture and Go Implementation](https://stringintech.github.io/blog/p/understanding-jwt-authentication-spring-securitys-architecture-and-go-implementation).
