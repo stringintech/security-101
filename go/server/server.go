@@ -5,6 +5,7 @@ import (
 	"github.com/stringintech/security-101/store"
 	"log"
 	"net/http"
+	"runtime/debug"
 )
 
 type Server struct {
@@ -30,7 +31,20 @@ func New(userStore *store.UserStore, jwtService *auth.JwtService) *Server {
 
 // ServeHTTP implements http.Handler to make Server a valid handler
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.DoFilter(w, r) //TODO well let's think
+	w = &ResponseWriter{ResponseWriter: w}
+
+	defer func() {
+		if err := recover(); err != nil {
+			stack := debug.Stack()
+			log.Printf("panic: %v\n%s", err, stack)
+
+			if rw, ok := w.(*ResponseWriter); !ok || !rw.Written() { //TODO? we should be able to override any written stuff instead
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+		}
+	}()
+
+	s.DoFilter(w, r)
 }
 
 func (s *Server) Serve() {
