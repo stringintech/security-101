@@ -48,5 +48,5 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) Serve() {
-	log.Fatal(http.ListenAndServe(":8080", s)) //TODO make configurable
+	log.Fatal(http.ListenAndServe(":8080", s))
 }

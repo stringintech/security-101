@@ -25,7 +25,7 @@ func (f *AuthenticationFilter) DoFilter(w http.ResponseWriter, r *http.Request, 
 	// Check if user is authenticated
 	_, ok := GetUserFromContext(r.Context())
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized) //TODO add method to r?
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 

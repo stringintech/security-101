@@ -42,7 +42,7 @@ func (s *JwtService) GenerateToken(user User) (string, error) {
 func (s *JwtService) ValidateTokenAndGetUsername(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return s.config.Secret, nil
-	}) //TODO use WithValidMethods!!!
+	}) //TODO use WithValidMethods
 	if err != nil {
 		return "", err
 	}

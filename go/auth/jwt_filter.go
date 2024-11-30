@@ -28,7 +28,7 @@ func (f *JwtFilter) DoFilter(w http.ResponseWriter, r *http.Request, filterChain
 	// Validate token
 	username, err := f.jwtService.ValidateTokenAndGetUsername(tokenString)
 	if err != nil {
-		//TODO log?
+		//TODO log
 		filterChain.DoFilter(w, r)
 		return
 	}
@@ -36,13 +36,12 @@ func (f *JwtFilter) DoFilter(w http.ResponseWriter, r *http.Request, filterChain
 	// Get user
 	user, exists := f.userStore.GetUserByUsername(username)
 	if !exists {
-		//TODO log?
+		//TODO log
 		filterChain.DoFilter(w, r)
 		return
 	}
 
 	// Set user in context and continue chain
 	ctx := SetUserInContext(r.Context(), user)
-	r = r.WithContext(ctx) //TODO :)
-	filterChain.DoFilter(w, r)
+	filterChain.DoFilter(w, r.WithContext(ctx))
 }
